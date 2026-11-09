@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Two-DOF Leg — Arduino Motion Playground</title>
+<style>
+:root{--navy:#142b43;--muted:#64748b;--teal:#007e87;--purple:#7255a3;--orange:#ef8b35;--border:#d6e0e9;--bg:#f3f6fa}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--navy);font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}header{padding:20px max(20px,calc((100vw - 1400px)/2));background:#123249;color:white}header h1{font-size:27px;margin:0 0 3px}header p{margin:0;color:#d3e7f0}main{max-width:1440px;margin:auto;padding:18px;display:grid;grid-template-columns:minmax(390px,1fr) minmax(425px,1.05fr);gap:16px}.panel{background:white;border:1px solid var(--border);border-radius:13px;box-shadow:0 2px 12px #102a4210;overflow:hidden}.pad{padding:17px 19px}h2{font-size:18px;margin:0 0 10px}h3{font-size:15px;margin:17px 0 8px}p{margin:0 0 10px}.small{font-size:12px;color:var(--muted)}.scene{width:100%;height:auto;display:block;background:#fcfdff}.slider-row{margin:12px 0 16px}.slider-label{display:flex;justify-content:space-between;font-weight:650}.v{color:#007e87;font-variant-numeric:tabular-nums}input[type=range]{width:100%;accent-color:var(--teal)}input[type=number]{width:76px;padding:6px;border:1px solid var(--border);border-radius:6px}button{cursor:pointer;border:1px solid #bfcfdc;background:#fff;border-radius:8px;padding:8px 12px;color:var(--navy);font-weight:650}button.primary{background:var(--teal);color:white;border-color:var(--teal)}button.dark{background:#163c58;color:white;border-color:#163c58}button:disabled{opacity:.45;cursor:default}button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid #87d2e9;outline-offset:2px}.actions{display:flex;gap:8px;flex-wrap:wrap}.help{background:#eaf5f7;border-radius:8px;padding:10px 12px;font-size:12px;margin-top:12px}.editor{display:block;width:100%;min-height:460px;resize:vertical;background:#102539;color:#f4f8ff;border:1px solid #264860;border-radius:9px;padding:14px 15px;font:13px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;tab-size:2;white-space:pre;overflow:auto}label{cursor:pointer}.editor:focus{outline-color:#74c7ed}.status{border-radius:8px;padding:9px 12px;background:#eef5f8;border:1px solid #d5e6eb;font-size:13px;min-height:40px;margin:11px 0}.status.error{background:#fff0ed;border-color:#f4bcb0;color:#9b3729}.status.ok{background:#edf8f0;border-color:#afd7bb;color:#235f38}.timeline{max-height:218px;overflow:auto;border:1px solid var(--border);border-radius:9px}.timeline table{width:100%;border-collapse:collapse;font-size:12px}.timeline th{position:sticky;top:0;background:#f2f6fa;text-align:left}.timeline td,.timeline th{padding:7px 9px;border-bottom:1px solid #e9eef2}.timeline tr.active{background:#e0f3f4}.timeline tr{cursor:pointer}.chip{display:inline-block;background:#edf3f8;border-radius:5px;padding:2px 6px;font-size:11px}.stats{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.stats span{background:#f0f5f8;border-radius:7px;padding:6px 9px;font-size:12px}#progress{width:100%;accent-color:var(--teal)}.controls{display:flex;gap:13px;flex-wrap:wrap;align-items:center;font-size:12px}.footnote{max-width:1440px;margin:auto;padding:0 18px 20px;font-size:12px;color:var(--muted)}.kbd{border:1px solid #beced9;border-radius:4px;padding:1px 4px;background:white;font-family:monospace}@media(max-width:950px){main{grid-template-columns:1fr}.editor{min-height:350px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style></head><body>
+<header><h1>Two-DOF Leg · Arduino Motion Playground</h1><p>Find joint angles with sliders → insert them into Arduino code → simulate the complete sequence.</p></header>
+<main><section class="panel"><svg id="scene" class="scene" viewBox="0 0 650 435" role="img" aria-label="Live two-link robot leg with hip, knee, and foot trajectory">
+<defs><pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" stroke="#e7eef4" stroke-width="1" fill="none"/></pattern></defs><rect width="650" height="435" fill="url(#grid)"/><rect x="228" y="30" width="145" height="44" rx="8" fill="#d6e4ef" stroke="#829aae" stroke-width="2"/><text x="300" y="56" text-anchor="middle" font-size="14" fill="#34536b" font-weight="700">Robot chassis</text><line x1="0" y1="394" x2="650" y2="394" stroke="#7895ac" stroke-width="2" stroke-dasharray="7 5"/><text x="635" y="385" text-anchor="end" fill="#687c8b" font-size="11">Ground reference (not enforced)</text><line x1="300" y1="96" x2="300" y2="365" stroke="#a5bccc" stroke-dasharray="5 6"/><path id="trail" fill="none" stroke="#e5a370" stroke-width="2.6" stroke-dasharray="4 4"/><line id="thigh" x1="300" y1="96" x2="300" y2="224" stroke="#007e87" stroke-width="16" stroke-linecap="round"/><line id="shin" x1="300" y1="224" x2="300" y2="352" stroke="#7255a3" stroke-width="14" stroke-linecap="round"/><circle cx="300" cy="96" r="15" fill="white" stroke="#007e87" stroke-width="5"/><circle id="kneeDot" cx="300" cy="224" r="12" fill="white" stroke="#7255a3" stroke-width="5"/><circle id="footDot" cx="300" cy="352" r="10" fill="#ef8b35" stroke="white" stroke-width="3"/><text x="321" y="90" fill="#007e87" font-weight="700" id="hipText">Hip 90°</text><text x="318" y="221" fill="#7255a3" font-weight="700" id="kneeText">Knee 90°</text><text x="318" y="355" fill="#b45e0f" id="footText">Foot</text></svg>
+<div class="pad"><h2>1 · Set a pose</h2><p class="small">Move either slider to preview the pose. These values are servo commands in degrees, not measured joint angles.</p><div class="slider-row"><div class="slider-label"><label for="hip">Hip servo · A0</label><span class="v" id="hipVal">90°</span></div><input type="range" min="0" max="180" value="90" id="hip" step="1"/></div><div class="slider-row"><div class="slider-label"><label for="knee">Knee servo · A1</label><span class="v" id="kneeVal">90°</span></div><input type="range" min="0" max="180" value="90" id="knee" step="1"/></div><div class="actions"><button id="neutral">Reset pose: 90° / 90°</button><button id="clearTrail">Clear foot path</button></div><h3>2 · Add this pose to your sketch</h3><div class="actions"><button class="primary" id="insertBoth">+ Insert hip + knee + delay</button><button id="insertHip">+ Hip only</button><button id="insertKnee">+ Knee only</button></div><div class="controls" style="margin-top:10px"><label for="wait">Wait after commands:</label><input type="number" id="wait" min="0" max="10000" step="50" value="350"/><span>ms</span></div><div class="help">Click inside the editor to choose where commands go. If you haven't selected a location, <strong>Insert</strong> adds commands before the final <code>}</code> in <code>loop()</code>. The sliders preview a pose without changing the code; click Insert to record it.</div><div class="stats"><span id="footXY">Foot: X 0, Y 256</span><span id="cmdPose">Command: hip 90°, knee 90°</span></div><div class="help"><strong>Angle model:</strong> Hip <code>90</code> points down; increasing hip angle moves the thigh right. Knee <code>90</code> straightens the leg; knee <code>65</code> bends it forward by 25°. Different mounting orientations produce different physical motion. This is a 2D kinematic visualizer, not a full Arduino emulator.</div></div></section>
+<section class="panel"><div class="pad"><h2>3 · Edit Arduino code</h2><p class="small">Use your own <code>hip.write(...)</code>, <code>knee.write(...)</code>, variables, and <code>delay(...)</code> statements. The simulator reads <code>setup()</code> once and <code>loop()</code> as one repeatable cycle.</p><textarea id="editor" class="editor" spellcheck="false" aria-label="Editable Arduino sketch"></textarea><div class="actions" style="margin-top:10px"><button id="resetCode">Restore sample sketch</button><button id="download">Download .ino</button><button id="copy">Copy code</button></div><h3>4 · Build &amp; play your sequence</h3><div class="actions"><button class="primary" id="build">✓ Check / build sequence</button><button class="dark" id="play">▶ Play code</button><button id="pause" disabled>❚❚ Pause</button><button id="stop">■ Stop</button><button id="step">Step one command</button></div><div class="controls" style="margin-top:12px"><label for="speed">Playback speed</label><input style="width:120px" id="speed" type="range" min="0.25" max="3" step="0.25" value="1"/><strong id="speedVal">1×</strong><label><input id="repeat" type="checkbox" checked/> Repeat loop</label><label><input id="showTrail" type="checkbox" checked/> Foot path</label></div><progress id="progress" max="100" value="0"></progress><div id="status" class="status" aria-live="polite">Edit code or insert poses, then select <strong>Play code</strong>.</div><div class="stats"><span id="seqInfo">No sequence built</span><span id="currentInfo">Waiting</span></div><h3>Sequence preview <span class="small">(click a row to inspect the pose)</span></h3><div class="timeline" id="timeline"><p style="padding:10px;color:#64748b">Select <strong>Check / build sequence</strong> to list commands.</p></div><div class="help"><strong>Supported sketch commands:</strong> <code>Servo hip;</code>, <code>Servo knee;</code>, <code>attach()</code>, <code>write()</code>, <code>delay()</code>, <code>int</code> variables, assignments, and basic arithmetic (<code>+ - * /</code>). <code>#include</code> and <code>Serial.begin()</code> are ignored. Unsupported commands such as <code>if</code>, <code>for</code>, <code>digitalRead()</code> and custom functions cause an explicit error. No code is executed on your computer or Arduino.</div></div></section></main><div class="footnote">Runs entirely offline in the browser. Playback shows idealized interpolation toward servo targets and may not represent actual servo speed, load, motor torque, collisions, foot-ground contact, or walking stability.</div>
+<script>
+(() => {'use strict';
+const $=id=>document.getElementById(id);
+const sample=`// Two servos move a two-DOF leg: hip and knee.
+// Test with the leg lifted off the table first.
+#include <Servo.h>
+Servo hip;
+Servo knee;
+
+void setup() {
+  hip.attach(A0);
+  knee.attach(A1);
+  hip.write(90);
+  knee.write(90);
+  delay(700);
+}
+
+void loop() {
+  knee.write(65);   // Lift the foot
+  delay(350);
+  hip.write(110);   // Swing the foot forward
+  delay(350);
+  knee.write(90);   // Lower the foot
+  delay(350);
+  hip.write(90);    // Return hip to neutral
+  delay(350);
+}`;
+$('editor').value=sample;
+let hip=90,knee=90,trail=[],sequence=[],startPose={h:90,k:90},paused=false,running=false,runIndex=0,phaseTime=0,lastFrame=0,visibleIndex=-1,targetH=90,targetK=90,tweenStartH=90,tweenStartK=90,tweenActive=false;
+const origin={x:300,y:96},len1=128,len2=128;
+function point(h,k){let a=(h-90)*Math.PI/180,b=(90-k)*Math.PI/180;let joint={x:origin.x+len1*Math.sin(a),y:origin.y+len1*Math.cos(a)};let foot={x:joint.x+len2*Math.sin(a+b),y:joint.y+len2*Math.cos(a+b)};return {joint,foot};}
+function paint(){const p=point(hip,knee),j=p.joint,f=p.foot;$('thigh').setAttribute('x2',j.x);$('thigh').setAttribute('y2',j.y);['x1','y1','x2','y2'].forEach((attr,i)=>$('shin').setAttribute(attr,[j.x,j.y,f.x,f.y][i]));$('kneeDot').setAttribute('cx',j.x);$('kneeDot').setAttribute('cy',j.y);$('footDot').setAttribute('cx',f.x);$('footDot').setAttribute('cy',f.y);$('hipText').textContent=`Hip ${Math.round(hip)}°`;$('kneeText').textContent=`Knee ${Math.round(knee)}°`;$('kneeText').setAttribute('x',j.x+19);$('kneeText').setAttribute('y',j.y-14);$('footText').setAttribute('x',f.x+18);$('footText').setAttribute('y',f.y+5);$('hip').value=Math.round(hip);$('knee').value=Math.round(knee);$('hipVal').textContent=`${Math.round(hip)}°`;$('kneeVal').textContent=`${Math.round(knee)}°`;$('footXY').textContent=`Foot: X ${Math.round(f.x-origin.x)}, Y ${Math.round(f.y-origin.y)}`;$('cmdPose').textContent=`Command: hip ${Math.round(hip)}°, knee ${Math.round(knee)}°`;$('trail').setAttribute('d',trail.length>1?'M'+trail.map(v=>`${v.x.toFixed(1)} ${v.y.toFixed(1)}`).join(' L'):'');}
+function trace(){if(!$('showTrail').checked)return;trail.push(point(hip,knee).foot);if(trail.length>330)trail.shift();}
+function setPose(h,k,record=false){hip=Math.max(0,Math.min(180,h));knee=Math.max(0,Math.min(180,k));if(record)trace();paint();}
+function report(message,kind=''){const node=$('status');node.className='status'+(kind?' '+kind:'');node.textContent=message;}
+function stop(reset=true){running=false;paused=false;lastFrame=0;$('pause').disabled=true;$('pause').textContent='❚❚ Pause';if(reset){runIndex=0;phaseTime=0;visibleIndex=-1,targetH=90,targetK=90,tweenStartH=90,tweenStartK=90,tweenActive=false;highlight(-1);$('progress').value=0;}}
+function manual(){stop();setPose(Number($('hip').value),Number($('knee').value),true);report('Pose previewed. Select “Insert” to add these angles to the sketch.');}
+$('hip').addEventListener('input',manual);$('knee').addEventListener('input',manual);
+$('neutral').onclick=()=>{stop();setPose(90,90,true);report('Pose reset to hip 90°, knee 90°.');};$('clearTrail').onclick=()=>{trail=[];paint();};$('showTrail').onchange=()=>{if(!$('showTrail').checked){trail=[];paint();}};
+function insertSnippet(s){stop();const e=$('editor');const txt=e.value;let a=e.selectionStart,b=e.selectionEnd;const focus=document.activeElement===e;if(!focus && a===b){const loop=txt.indexOf('void loop');if(loop>=0){const close=txt.lastIndexOf('}');a=b=close>=loop?close:txt.length;}else a=b=txt.length;}const prepend=(a>0&&txt[a-1]!=='\n')?'\n':'';const snippet=prepend+s+(txt[a]==='\n'?'':'\n');e.value=txt.slice(0,a)+snippet+txt.slice(b);e.focus();e.setSelectionRange(a+snippet.length,a+snippet.length);invalidate();report('Pose added to the sketch. Click “Play code” to simulate the updated loop.');}
+function wait(){const w=Number($('wait').value);if(!Number.isFinite(w)||w<0||w>10000){report('Choose a delay from 0 to 10000 ms.','error');return null;}return Math.round(w);}
+$('insertBoth').onclick=()=>{const w=wait();if(w!=null)insertSnippet(`  hip.write(${Math.round(hip)});\n  knee.write(${Math.round(knee)});\n  delay(${w});`);};
+$('insertHip').onclick=()=>insertSnippet(`  hip.write(${Math.round(hip)});`);$('insertKnee').onclick=()=>insertSnippet(`  knee.write(${Math.round(knee)});`);
+$('resetCode').onclick=()=>{stop();$('editor').value=sample;invalidate();report('Example sketch restored.');};
+$('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('editor').value);report('Sketch copied to clipboard.','ok');}catch(e){$('editor').focus();$('editor').select();document.execCommand('copy');report('Sketch selected and copy requested.');}};
+$('download').onclick=()=>{const blob=new Blob([$('editor').value],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');const url=URL.createObjectURL(blob);a.href=url;a.download='Two_DOF_Leg_Custom.ino';a.click();setTimeout(()=>URL.revokeObjectURL(url),500);};
+$('speed').oninput=()=>$('speedVal').textContent=Number($('speed').value).toFixed(2).replace(/\.?0+$/,'')+'×';
+function stripComments(source){return source.replace(/\/\*[\s\S]*?\*\//g,m=>m.replace(/[^\n]/g,' ')).replace(/\/\/[^\n]*/g,m=>' '.repeat(m.length));}
+function lineNumber(src,pos){return src.slice(0,pos).split('\n').length;}
+function bodyOf(src,name){const m=new RegExp('\\bvoid\\s+'+name+'\\s*\\(\\s*\\)\\s*\\{','g').exec(src);if(!m)throw Error(`Could not find void ${name}() { ... }`);const from=m.index+m[0].length;let depth=1;for(let i=from;i<src.length;i++){if(src[i]==='{')depth++;if(src[i]==='}')depth--;if(depth===0)return {text:src.slice(from,i),start:from};}throw Error(`Missing closing brace in ${name}().`);}
+function evaluate(expression,vars,line){let toks=expression.match(/\s*(?:\d+(?:\.\d+)?|[A-Za-z_]\w*|[()+\-*/])\s*/g)||[];if(toks.join('').replace(/\s/g,'')!==expression.replace(/\s/g,''))throw Error(`Line ${line}: unsupported expression “${expression}”.`);toks=toks.map(t=>t.trim());let i=0;function atom(){const t=toks[i++];if(t==='('){const v=add();if(toks[i++]!==')')throw Error(`Line ${line}: missing ')'.`);return v;}if(t==='-')return -atom();if(t==='+')return atom();if(/^\d/.test(t||''))return Number(t);if(/^[A-Za-z_]\w*$/.test(t||'')){if(!(t in vars))throw Error(`Line ${line}: variable “${t}” was not defined.`);return vars[t];}throw Error(`Line ${line}: invalid expression “${expression}”.`);}function mult(){let v=atom();while(toks[i]==='*'||toks[i]==='/'){const op=toks[i++],next=atom();v=op==='*'?v*next:v/next;}return v;}function add(){let v=mult();while(toks[i]==='+'||toks[i]==='-'){const op=toks[i++],next=mult();v=op==='+'?v+next:v-next;}return v;}const v=add();if(i!==toks.length||!Number.isFinite(v))throw Error(`Line ${line}: invalid or non-finite expression “${expression}”.`);return v;}
+function parse(){const original=$('editor').value,src=stripComments(original);const setup=bodyOf(src,'setup'),loop=bodyOf(src,'loop');const vars={},events=[],initial={h:90,k:90};function process(body,which){const parts=body.text.split(';');let h=which==='setup'?90:initial.h,k=which==='setup'?90:initial.k;for(let idx=0,cursor=0;idx<parts.length;idx++){const part=parts[idx];let line=lineNumber(src,body.start+cursor);cursor+=part.length+1;const s=part.trim();if(!s)continue;if(idx===parts.length-1)throw Error(`Line ${line}: missing semicolon after “${s.slice(0,36)}”.`);if(/[{}]/.test(s))throw Error(`Line ${line}: nested blocks, if/for/while and functions are not supported by this visualizer.`);let m;if((m=/^(?:int|float|double|long|unsigned\s+int|const\s+int)\s+([A-Za-z_]\w*)\s*=\s*(.+)$/.exec(s))){vars[m[1]]=evaluate(m[2],vars,line);continue;}if((m=/^([A-Za-z_]\w*)\s*=\s*(.+)$/.exec(s))){if(!(m[1] in vars))throw Error(`Line ${line}: assignment to undefined variable “${m[1]}”.`);vars[m[1]]=evaluate(m[2],vars,line);continue;}if((m=/^(hip|knee)\.write\s*\((.+)\)$/.exec(s))){const deg=evaluate(m[2],vars,line);if(deg<0||deg>180)throw Error(`Line ${line}: servo.write angle must be between 0 and 180, found ${deg}.`);const rounded=Math.round(deg);if(m[1]==='hip')h=rounded;else k=rounded;if(which==='loop')events.push({type:'write',h,k,ms:0,line,description:`${m[1]}.write(${rounded})`});continue;}if((m=/^delay\s*\((.+)\)$/.exec(s))){const ms=Math.round(evaluate(m[1],vars,line));if(ms<0||ms>120000)throw Error(`Line ${line}: delay must be 0–120000 ms.`);if(which==='loop')events.push({type:'delay',h,k,ms,line,description:`delay(${ms})`});continue;}if(/^\w+\.attach\s*\(\s*\w+\s*\)$/.test(s)||/^\w+\.begin\s*\(\s*\d+\s*\)$/.test(s))continue;throw Error(`Line ${line}: unsupported command “${s.slice(0,65)}”. Supported: write(), delay(), variable assignment and arithmetic.`);}if(which==='setup'){initial.h=h;initial.k=k;} }
+// Only variable declarations and definitions outside setup/loop are allowed; the declarations of servos are ignored.
+let outside=src.replace(/#include[^\n]*/g,'');for(const part of [setup,loop]){const begin=part.start;let end=begin+part.text.length+1;let opening=src.lastIndexOf('void ',begin);outside=outside.slice(0,opening)+' '.repeat(end-opening)+outside.slice(end);}
+const globalParts=outside.split(';');for(let i=0;i<globalParts.length-1;i++){const s=globalParts[i].trim();if(!s)continue;let m;if(/^Servo\s+(hip|knee)$/.test(s))continue;if((m=/^(?:int|float|double|long|const\s+int)\s+(\w+)\s*=\s*([^;]+)$/.exec(s))){vars[m[1]]=evaluate(m[2],vars,1);continue;}throw Error('Unsupported statement outside setup()/loop(): '+s.slice(0,60));}
+// Re-evaluate setup and loop after initializing global variables.
+process(setup,'setup');process(loop,'loop');if(!events.length)throw Error('loop() contains no hip.write(), knee.write(), or delay() commands.');if(events.length>1000)throw Error('Sketch contains too many commands for visualization.');return {initial,events};}
+function invalidate(){sequence=[];$('seqInfo').textContent='Sketch changed — rebuild';$('timeline').innerHTML='<p style="padding:10px;color:#64748b">Click “Check / build sequence” to see the updated commands.</p>';$('progress').value=0;}
+$('editor').addEventListener('input',()=>{stop();invalidate();});
+function highlight(index){document.querySelectorAll('#timeline tr[data-index]').forEach(row=>{row.classList.toggle('active',Number(row.dataset.index)===index);});}
+function renderTimeline(){const total=sequence.reduce((sum,e)=>sum+e.ms,0);$('seqInfo').textContent=`${sequence.length} commands · ${total} ms of delay`;const html=['<table><thead><tr><th>#</th><th>Line</th><th>Command</th><th>Hip</th><th>Knee</th></tr></thead><tbody>'];sequence.forEach((e,i)=>html.push(`<tr data-index="${i}"><td>${i+1}</td><td>${e.line}</td><td>${e.description}</td><td>${e.h}°</td><td>${e.k}°</td></tr>`));html.push('</tbody></table>');$('timeline').innerHTML=html.join('');document.querySelectorAll('#timeline tr[data-index]').forEach(r=>r.onclick=()=>{stop();const i=Number(r.dataset.index);setPose(sequence[i].h,sequence[i].k,true);highlight(i);report(`Previewing command ${i+1}: ${sequence[i].description} (line ${sequence[i].line}).`);});}
+function build(){stop();try{const result=parse();sequence=result.events;startPose=result.initial;renderTimeline();setPose(startPose.h,startPose.k);$('currentInfo').textContent='Ready';report(`Sketch checked. Found ${sequence.length} commands. Initial pose: hip ${startPose.h}°, knee ${startPose.k}°.`, 'ok');return true;}catch(e){invalidate();report(e.message,'error');return false;}}
+$('build').onclick=build;
+function start(){if(!sequence.length&&!build())return;stop();trail=[];setPose(startPose.h,startPose.k,true);runIndex=0;phaseTime=0;lastFrame=0;targetH=startPose.h;targetK=startPose.k;tweenActive=false;running=true;paused=false;$('pause').disabled=false;report('Playing your sketch. Adjust speed or pause at any time.','ok');}
+$('play').onclick=start;
+$('pause').onclick=()=>{if(!running)return;paused=!paused;$('pause').textContent=paused?'▶ Resume':'❚❚ Pause';lastFrame=0;report(paused?'Paused.':'Resumed playback.');};
+$('stop').onclick=()=>{stop();report('Playback stopped.');};
+$('step').onclick=()=>{if(!sequence.length&&!build())return;stop(false);if(visibleIndex===-1||visibleIndex>=sequence.length-1)visibleIndex=0;else visibleIndex++;const e=sequence[visibleIndex];setPose(e.h,e.k,true);highlight(visibleIndex);$('progress').value=(visibleIndex+1)*100/sequence.length;report(`Command ${visibleIndex+1}/${sequence.length}: ${e.description}`);};
+function animate(t){
+  requestAnimationFrame(animate);
+  if(!running||paused)return;
+  if(!lastFrame)lastFrame=t;
+  const dt=Math.min(70,t-lastFrame)*Number($('speed').value);
+  lastFrame=t;
+  phaseTime+=dt;
+  let guard=0;
+  while(running&&guard++<sequence.length+3){
+    if(runIndex>=sequence.length){
+      if($('repeat').checked){
+        runIndex=0;phaseTime=0;tweenActive=false;
+        // Arduino setup() does NOT run again between loop() iterations.
+      }else{
+        setPose(targetH,targetK,true);
+        stop(false);$('pause').disabled=true;
+        report('One complete loop finished.','ok');$('progress').value=100;
+      }
+      break;
+    }
+    const e=sequence[runIndex];
+    if(visibleIndex!==runIndex){
+      visibleIndex=runIndex;highlight(runIndex);
+      $('currentInfo').textContent=`Line ${e.line}: ${e.description}`;
+    }
+    if(e.type==='write'){
+      targetH=e.h;targetK=e.k;
+      tweenActive=false;
+      runIndex++;continue;
+    }
+    if(e.ms===0){setPose(targetH,targetK,true);runIndex++;continue;}
+    if(!tweenActive){
+      tweenStartH=hip;tweenStartK=knee;tweenActive=true;
+    }
+    const duration=e.ms;
+    // Educational visual interpolation, not a servo speed model.
+    const movementWindow=Math.min(230,duration);
+    const f=Math.min(1,phaseTime/movementWindow);
+    const eased=f*f*(3-2*f);
+    setPose(tweenStartH+(targetH-tweenStartH)*eased,
+      tweenStartK+(targetK-tweenStartK)*eased,true);
+    $('progress').value=Math.min(100,100*(runIndex+phaseTime/duration)/sequence.length);
+    if(phaseTime>=duration){
+      phaseTime-=duration;runIndex++;tweenActive=false;continue;
+    }
+    break;
+  }
+}
+// Clean sample, allow first use without an explicit build.
+setPose(90,90);requestAnimationFrame(animate);
+})();
+</script></body></html>
